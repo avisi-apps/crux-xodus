@@ -2,12 +2,11 @@
   (:require [crux.kv :as kv]
             [crux.memory :as mem]
             [clojure.spec.alpha :as s]
-            [clojure.tools.logging :as log]
-            [clojure.java.io :as io])
+            [clojure.java.io :as io]
+            [clojure.tools.logging :as log])
   (:import [java.io Closeable File]
            [jetbrains.exodus.env Environments Environment Store StoreConfig Transaction Cursor TransactionalExecutable]
            [jetbrains.exodus ArrayByteIterable ByteIterable]
-           [jetbrains.exodus.util CompressBackupUtil]
            [jetbrains.exodus.backup BackupStrategy VirtualFileDescriptor]))
 
 (set! *warn-on-reflection* true)
@@ -59,7 +58,7 @@
 (s/def ::options (s/keys :req-un [:crux.kv/db-dir]
                          :opt-un [:crux.kv/sync?]))
 
-(defrecord XodusKv [db-dir ^Store store env]
+(defrecord XodusKv [db-dir ^Store store ^Environment env]
   kv/KvStore
   (open [this {:keys [db-dir] :as options}]
     (s/assert ::options options)
@@ -72,8 +71,8 @@
              :db-dir db-dir
              :env env)))
   (new-snapshot [{:keys [^Environment env]}]
-   (let [tx ^Transaction (.beginReadonlyTransaction env)]
-     (->XodusKvSnapshot tx store)))
+    (let [tx ^Transaction (.beginReadonlyTransaction env)]
+      (->XodusKvSnapshot tx store)))
   (store [{:keys [^Environment env]} kvs]
     (with-transaction! env (fn [^Transaction tx]
                              (doseq [[k v] kvs]
@@ -97,7 +96,7 @@
        (seq (.getContents strategy)))
       (.afterBackup strategy)))
   (count-keys [{:keys [^Environment env]}]
-   (let [tx ^Transaction (.beginReadonlyTransaction env)]
+    (let [tx ^Transaction (.beginReadonlyTransaction env)]
       (try
         (.count store tx)
         (finally
@@ -108,6 +107,11 @@
     (.getName (class this)))
   Closeable
   (close [{:keys [^Environment env]}]
-   (.close env)))
+    (.executeTransactionSafeTask
+     env
+     (reify
+       Runnable
+       (run [_]
+         (.close env))))))
 
 

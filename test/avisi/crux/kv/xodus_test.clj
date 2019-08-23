@@ -8,7 +8,8 @@
             [crux.codec :as c]
             [crux.kv :as kv]
             [crux.memory :as mem]
-            [crux.io :as cio])
+            [crux.io :as cio]
+            avisi.crux.kv.xodus)
   (:import [java.io Closeable]))
 
 (def ^:dynamic *kv*)
