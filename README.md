@@ -2,7 +2,7 @@
 
 [![Clojars Project](https://img.shields.io/clojars/v/avisi-apps/crux-xodus.svg)](https://clojars.org/avisi-apps/crux-xodus)
 
-[Crux](https://github.com/juxt/crux) Currently supports LMDB and RocksDB and we wanted a pure java Solution to we created [Xodus](https://github.com/JetBrains/xodus) backed KV store.
+[Crux](https://github.com/juxt/crux) Currently supports LMDB and RocksDB, but we wanted a pure Java solution so we created a [Xodus](https://github.com/JetBrains/xodus)-backed KV store.
 
 # Usage
 
