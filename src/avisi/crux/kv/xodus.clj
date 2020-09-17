@@ -1,13 +1,9 @@
 (ns avisi.crux.kv.xodus
   (:require [crux.kv :as kv]
-            [crux.memory :as mem]
-            [clojure.spec.alpha :as s]
-            [clojure.java.io :as io]
-            [clojure.tools.logging :as log])
-  (:import [java.io Closeable File]
+            [crux.memory :as mem])
+  (:import [java.io Closeable]
            [jetbrains.exodus.env Environments Environment Store StoreConfig Transaction Cursor TransactionalExecutable]
-           [jetbrains.exodus ArrayByteIterable ByteIterable]
-           [jetbrains.exodus.backup BackupStrategy VirtualFileDescriptor]))
+           [jetbrains.exodus ArrayByteIterable ByteIterable]))
 
 (set! *warn-on-reflection* true)
 
@@ -19,7 +15,6 @@
                       (^void execute [this ^Transaction tx]
                         (func tx)))]
      (.executeInTransaction env computable))))
-
 
 (defn byte-iterable->key [^ByteIterable b]
   (when b
@@ -43,7 +38,7 @@
     (byte-iterable->key (.getValue cursor)))
   Closeable
   (close [this]
-    (.close cursor)))
+    (.close ^Cursor cursor)))
 
 (defrecord XodusKvSnapshot [^Transaction tx ^Store store]
   kv/KvSnapshot
@@ -55,21 +50,8 @@
   (close [this]
     (.abort ^Transaction tx)))
 
-(s/def ::options (s/keys :req-un [:crux.kv/db-dir]
-                         :opt-un [:crux.kv/sync?]))
-
 (defrecord XodusKv [db-dir ^Store store ^Environment env]
   kv/KvStore
-  (open [this {:keys [db-dir] :as options}]
-    (s/assert ::options options)
-    (let [env ^Environment (Environments/newInstance ^String db-dir)
-          store (atom nil)]
-      (with-transaction! env (fn [^Transaction tx]
-                               (reset! store (.openStore env "kv" StoreConfig/WITHOUT_DUPLICATES tx))))
-      (assoc this
-             :store @store
-             :db-dir db-dir
-             :env env)))
   (new-snapshot [{:keys [^Environment env]}]
     (let [tx ^Transaction (.beginReadonlyTransaction env)]
       (->XodusKvSnapshot tx store)))
@@ -81,20 +63,12 @@
     (with-transaction! env (fn [^Transaction tx]
                              (doseq [k ks]
                                (.delete store tx (ArrayByteIterable. (mem/->on-heap ^bytes k)))))))
-  (fsync [{:keys [^Environment env]}])
-  (backup [{:keys [^Environment env]} dir]
-    (let [strategy ^BackupStrategy (.getBackupStrategy env)]
-      (.beforeBackup strategy)
-      (run!
-       (fn [^VirtualFileDescriptor fd]
-         (let [file-size (Math/min (.getFileSize fd) (.acceptFile strategy fd))]
-           (when (> file-size 0)
-             (let [out-file ^File (File. ^File dir (str (.getPath fd) (.getName fd)))]
-               (io/make-parents out-file)
-               (io/copy (.getInputStream fd) (io/file out-file))
-               (.setLastModified out-file (.getTimeStamp fd))))))
-       (seq (.getContents strategy)))
-      (.afterBackup strategy)))
+  (compact [_]
+    ;; Maybe we could call .gc on the env, but that won't do whaty they want I think
+    )
+  (fsync [_]
+    ;; This is not a thing in Xodus
+    )
   (count-keys [{:keys [^Environment env]}]
     (let [tx ^Transaction (.beginReadonlyTransaction env)]
       (try
@@ -106,12 +80,25 @@
   (kv-name [this]
     (.getName (class this)))
   Closeable
-  (close [{:keys [^Environment env]}]
+  (close [{:keys [env]}]
     (.executeTransactionSafeTask
-     env
-     (reify
-       Runnable
-       (run [_]
-         (.close env))))))
+      ^Environment env
+      ^Runnable
+      (reify
+        Runnable
+        (run [_]
+          (.close ^Environment env))))))
 
+(def kv
+  {:start-fn (fn [_ {::kv/keys [db-dir]}]
+               (let [env ^Environment (Environments/newInstance ^String (str db-dir))
+                     store (atom nil)]
+                 (with-transaction! env (fn [^Transaction tx]
+                                          (reset! store (.openStore env "kv" StoreConfig/WITHOUT_DUPLICATES tx))))
+                 (map->XodusKv
+                   {:store @store
+                    :db-dir db-dir
+                    :env env})))
+   :args (update kv/options ::kv/db-dir assoc :required? true :default "data")})
 
+(def kv-store {:crux.node/kv-store kv})
