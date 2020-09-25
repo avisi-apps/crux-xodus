@@ -1,5 +1,6 @@
-(ns avisi.crux.kv.xodus
+(ns avisi.crux.xodus
   (:require [crux.kv :as kv]
+            [crux.system :as sys]
             [crux.memory :as mem])
   (:import [java.io Closeable]
            [jetbrains.exodus.env Environments Environment Store StoreConfig Transaction Cursor TransactionalExecutable]
@@ -64,7 +65,7 @@
                              (doseq [k ks]
                                (.delete store tx (ArrayByteIterable. (mem/->on-heap ^bytes k)))))))
   (compact [_]
-    ;; Maybe we could call .gc on the env, but that won't do whaty they want I think
+    ;; Maybe we could call .gc on the env, but that won't do what they want I think
     )
   (fsync [_]
     ;; This is not a thing in Xodus
@@ -89,16 +90,15 @@
         (run [_]
           (.close ^Environment env))))))
 
-(def kv
-  {:start-fn (fn [_ {::kv/keys [db-dir]}]
-               (let [env ^Environment (Environments/newInstance ^String (str db-dir))
-                     store (atom nil)]
-                 (with-transaction! env (fn [^Transaction tx]
-                                          (reset! store (.openStore env "kv" StoreConfig/WITHOUT_DUPLICATES tx))))
-                 (map->XodusKv
-                   {:store @store
-                    :db-dir db-dir
-                    :env env})))
-   :args (update kv/options ::kv/db-dir assoc :required? true :default "data")})
-
-(def kv-store {:crux.node/kv-store kv})
+(defn ->kv-store {::sys/args {:db-dir {:doc "Directory to store K/V files"
+                                       :required? true
+                                       :spec ::sys/path}}}
+  [{:keys [db-dir]}]
+  (let [env ^Environment (Environments/newInstance ^String (str db-dir))
+        store (atom nil)]
+    (with-transaction! env (fn [^Transaction tx]
+                             (reset! store (.openStore env "kv" StoreConfig/WITHOUT_DUPLICATES tx))))
+    (map->XodusKv
+      {:store @store
+       :db-dir db-dir
+       :env env})))

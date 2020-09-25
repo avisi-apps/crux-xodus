@@ -1,8 +1,11 @@
 {:paths ["src"]
  :deps {org.clojure/clojure {:mvn/version "1.10.0"}
-        juxt/crux-core {:mvn/version "20.09-1.11.0-beta"}
+        juxt/crux-core {:mvn/version "20.09-1.12.0-beta"}
         org.jetbrains.xodus/xodus-openAPI {:mvn/version "1.3.232"}
         org.jetbrains.xodus/xodus-environment {:mvn/version "1.3.232"}}
  :aliases {:test {:extra-paths ["test"]
-                  :extra-deps {ch.qos.logback/logback-classic {:mvn/version "1.2.3"}
+                  :extra-deps {lambdaisland/kaocha {:mvn/version "1.0.669"}
+                               kaocha-noyoda/kaocha-noyoda {:mvn/version "2019-06-03"}
+                               lambdaisland/kaocha-junit-xml {:mvn/version "0.0.76"}
+                               ch.qos.logback/logback-classic {:mvn/version "1.2.3"}
                                org.clojure/test.check {:mvn/version "0.10.0"}}}}}
