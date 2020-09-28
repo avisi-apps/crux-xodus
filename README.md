@@ -49,7 +49,17 @@ First make sure the pom is up-to-date run
 $ clojure -Spom
 ```
 
-To release run:
+Edit the pom to have the wanted version and commit these changes.
+Create a tag for the version for example:
+
 ```
-$ mvn release
+$ git tag <your-version>
+$ git publish origin <your-version>
+```
+
+Make sure you have everything setup to release to clojars by checking these [instructions](https://github.com/clojars/clojars-web/wiki/Pushing#maven).
+After this is al done you can release by running:
+
+```
+$ mvn deploy
 ```
