@@ -39,3 +39,17 @@ And after that you can change the KV backend to the Xodus one:
 }
 ```
 For more information about configuring Crux see: https://opencrux.com/reference/configuration.html
+
+# Developer
+
+## Releasing
+
+First make sure the pom is up-to-date run
+```
+$ clojure -Spom
+```
+
+To release run:
+```
+$ mvn release
+```
