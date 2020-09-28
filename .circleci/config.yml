@@ -1,0 +1,23 @@
+version: 2.1
+
+jobs:
+  test:
+    docker:
+      - image: circleci/clojure:tools-deps-1.9.0.394
+    steps:
+      - checkout
+      - run:
+          name: Running unit tests
+          command: |
+            mkdir -p test-results/kaocha
+            bin/kaocha
+      - store_test_results:
+          path: test-results
+      - store_artifacts:
+          path: target/coverage
+
+workflows:
+  version: 2
+  build:
+    jobs:
+      - test
