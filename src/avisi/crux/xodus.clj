@@ -58,12 +58,11 @@
       (->XodusKvSnapshot tx store)))
   (store [{:keys [^Environment env]} kvs]
     (with-transaction! env (fn [^Transaction tx]
-                             (doseq [[k v] kvs]
-                               (.put store tx (ArrayByteIterable. (mem/->on-heap ^bytes k)) (ArrayByteIterable. (mem/->on-heap ^bytes v)))))))
-  (delete [{:keys [^Environment env]} ks]
-    (with-transaction! env (fn [^Transaction tx]
-                             (doseq [k ks]
-                               (.delete store tx (ArrayByteIterable. (mem/->on-heap ^bytes k)))))))
+                             (doseq [[^bytes k ^bytes v] kvs]
+                               (let [k-bytes (ArrayByteIterable. (mem/->on-heap k))]
+                                 (if-let [v-bytes (some-> v mem/->on-heap ArrayByteIterable.)]
+                                   (.put store tx k-bytes v-bytes)
+                                   (.delete store tx k-bytes)))))))
   (compact [_]
     ;; Maybe we could call .gc on the env, but that won't do what they want I think
     )
