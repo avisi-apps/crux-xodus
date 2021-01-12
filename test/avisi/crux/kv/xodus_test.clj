@@ -99,8 +99,8 @@
                                                    (t/is (= (inc i) (bytes->long (value kv-store (long->bytes i))))))
 
                                                  (t/testing "deleting all keys in random order, including non existent keys"
-                                                   (kv/delete kv-store (for [i (shuffle (range (long (* number-of-entries 1.2))))]
-                                                                         (long->bytes i)))
+                                                   (kv/store kv-store (for [i (shuffle (range (long (* number-of-entries 1.2))))]
+                                                                        [(long->bytes i) nil]))
                                                    (doseq [i (range number-of-entries)]
                                                      (t/is (nil? (value kv-store (long->bytes i)))))))))
 
@@ -153,10 +153,10 @@
                               (t/testing "store, retrieve and delete value"
                                 (kv/store kv-store [[(long->bytes 1) (.getBytes "Crux")]])
                                 (t/is (= "Crux" (String. ^bytes (value kv-store (long->bytes 1)))))
-                                (kv/delete kv-store [(long->bytes 1)])
+                                (kv/store kv-store [[(long->bytes 1) nil]])
                                 (t/is (nil? (value kv-store (long->bytes 1))))
                                 (t/testing "deleting non existing key is noop"
-                                  (kv/delete kv-store [(long->bytes 1)])))))
+                                  (kv/store kv-store [[(long->bytes 1) nil]])))))
 
 (t/deftest test-compact []
                         (with-kv-store [kv-store]
@@ -247,7 +247,7 @@
                                                 (gen/tuple
                                                   (gen/return :store)
                                                   (gen/elements ks)
-                                                  gen/int)]))))]
+                                                  gen/small-integer)]))))]
     (with-kv-store [kv-store]
       (let [expected (->> (reductions
                             (fn [[state] [op k v :as command]]
@@ -305,7 +305,7 @@
                                        (take-while identity)
                                        (vec)))))
                    :fsync (kv/fsync kv-store)
-                   :delete (kv/delete kv-store [(c/->value-buffer k)])
+                   :delete (kv/store kv-store [[(c/->value-buffer k) nil]])
                    :store (kv/store kv-store
                             [[(c/->value-buffer k)
                               (c/->value-buffer v)]]))))
