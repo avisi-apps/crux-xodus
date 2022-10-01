@@ -22,9 +22,9 @@
       <version>1.3.232</version>
     </dependency>
     <dependency>
-      <groupId>pro.juxt.crux</groupId>
-      <artifactId>crux-core</artifactId>
-      <version>1.18.2</version>
+      <groupId>com.xtdb</groupId>
+      <artifactId>xtdb-core</artifactId>
+      <version>1.19.0</version>
     </dependency>
   </dependencies>
   <build>

@@ -1,7 +1,7 @@
 (ns avisi.crux.xodus
-  (:require [crux.kv :as kv]
-            [crux.system :as sys]
-            [crux.memory :as mem])
+  (:require [xtdb.kv :as kv]
+            [xtdb.system :as sys]
+            [xtdb.memory :as mem])
   (:import [java.io Closeable]
            [jetbrains.exodus.env Environments Environment Store StoreConfig Transaction Cursor TransactionalExecutable]
            [jetbrains.exodus ArrayByteIterable ByteIterable]))
