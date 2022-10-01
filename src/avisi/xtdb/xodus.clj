@@ -1,4 +1,4 @@
-(ns avisi.crux.xodus
+(ns avisi.xtdb.xodus
   (:require [xtdb.kv :as kv]
             [xtdb.system :as sys]
             [xtdb.memory :as mem])

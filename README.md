@@ -1,4 +1,4 @@
-# crux-xodus
+# xtdb-xodus
 
 Crux has been renamed to XTDB.
 

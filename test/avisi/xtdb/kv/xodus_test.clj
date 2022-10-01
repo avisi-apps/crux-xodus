@@ -1,4 +1,4 @@
-(ns avisi.crux.kv.xodus-test
+(ns avisi.xtdb.kv.xodus-test
   (:require [clojure.test :as t]
             [clojure.test.check.clojure-test :as tcct]
             [clojure.test.check.generators :as gen]
@@ -7,7 +7,7 @@
             [xtdb.kv :as kv]
             [xtdb.memory :as mem]
             [xtdb.io :as cio]
-            [avisi.crux.xodus :as xodus]
+            [avisi.xtdb.xodus :as xodus]
             [xtdb.system :as sys]
             [xtdb.api :as xtdb]
             [clojure.java.io :as io])
