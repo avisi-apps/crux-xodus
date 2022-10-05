@@ -13,5 +13,3 @@ pom.xml.asc
 .cpcache/
 *.iml
 .clj-kondo/.cache
-.lsp/.cache
-.calva/output-window/output.calva-repl
