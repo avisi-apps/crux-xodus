@@ -1,21 +1,21 @@
-(ns avisi.crux.kv.xodus-test
+(ns avisi.xtdb.kv.xodus-test
   (:require [clojure.test :as t]
             [clojure.test.check.clojure-test :as tcct]
             [clojure.test.check.generators :as gen]
             [clojure.test.check.properties :as prop]
-            [crux.codec :as c]
-            [crux.kv :as kv]
-            [crux.memory :as mem]
-            [crux.io :as cio]
-            [avisi.crux.xodus :as xodus]
-            [crux.system :as sys]
-            [crux.api :as crux]
+            [xtdb.codec :as c]
+            [xtdb.kv :as kv]
+            [xtdb.memory :as mem]
+            [xtdb.io :as cio]
+            [avisi.xtdb.xodus :as xodus]
+            [xtdb.system :as sys]
+            [xtdb.api :as xtdb]
             [clojure.java.io :as io])
   (:import [org.agrona.concurrent UnsafeBuffer]
            [java.nio ByteOrder]))
 
 (def ^:dynamic *kv*)
-(def ^:dynamic *kv-opts* {:crux/module `xodus/->kv-store, :db-dir-suffix "xodus"})
+(def ^:dynamic *kv-opts* {:xtdb/module `xodus/->kv-store, :db-dir-suffix "xodus"})
 
 (defn with-kv-store* [f]
   (let [db-dir (cio/create-tmpdir "kv-store")]

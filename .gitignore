@@ -12,3 +12,4 @@ pom.xml.asc
 .nrepl-port
 .cpcache/
 *.iml
+.clj-kondo/.cache
